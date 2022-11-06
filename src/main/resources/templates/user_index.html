@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的项目</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            height: 100%;
+        }
+        body {
+            height: 100%;
+        }
+        .user_container {
+            height: 100%;
+            background-image: linear-gradient(to right, #fbc2eb, #a6c1ee);
+        }
+        .login-wrapper {
+            background-color: #fff;
+            width: 900px;
+            height: 520px;
+            border-radius: 15px;
+            padding: 0 50px;
+            position: relative;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .header {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: left;
+            line-height: 30px;
+        }
+        .btn {
+            text-align: center;
+            padding: 5px;
+            width: 100%;
+            background-image: linear-gradient(to right, #a6c1ee, #fbc2eb);
+            color: #fff;
+        }
+        .msg {
+            text-align: center;
+            line-height: 88px;
+        }
+        a {
+            text-decoration-line: none;
+            color: #abc1ee;
+        }
+        table{
+            width: 898px;
+            height: 420px;
+            font-size: 16px;
+        }
+        .td1{
+            text-align: center;
+            width: 115px;
+        }
+        input{
+            width: 98%;
+        }
+        #user_popLayer {
+            display: none;
+            background-color: #B3B3B3;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 8;
+            -moz-opacity: 0.8;
+            opacity:.80;
+            filter: alpha(opacity=90);/* 只支持IE6、7、8、9 */
+        }
+        #user_suggestion{
+            text-align: center;
+            padding-top: 20px;;
+            display: none;
+            background-color: white;
+            position: absolute;
+            width: 600px;
+            height: 400px;
+            margin: auto;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 9;
+        }
+    </style>
+</head>
+<body>
+<div class="user_container">
+    <div id="user_popLayer"></div>
+    <div id="user_suggestion">
+        <div style="height: 90%">
+            <span th:text="${my_project.suggestion}">暂时没有评价！</span>
+        </div>
+        <div style="margin-bottom: 10px;width: 100%;text-align: center;height: 9%">
+            <input type="button" value="关闭" onclick="down_suggestion()" >
+        </div>
+    </div>
+    <div class="login-wrapper">
+        <div class="header">我的项目
+            <span th:if="${my_project.state}==1" style="color: chartreuse">审批通过</span>
+            <span th:if="${my_project.state}==-1" style="color: red">审批被退回！</span>
+            <span th:if="${my_project.state}==0" style="color: darkolivegreen">审批进行中……</span>
+        </div>
+        <form action="/users/submit" method="post" enctype="multipart/form-data">
+            <div class="form-wrapper">
+                <div class="form-wrapper">
+                    <table border="1px solid black" cellspacing="0">
+                        <tr>
+                            <td class="td1">项目名称</td>
+                            <td>
+                                <input type="text" th:value="${my_project.projectName}" name="projectName">
+                            </td>
+
+                            <td class="td1">项目地址</td>
+                            <td colspan="3">
+                                <input type="text" th:value="${my_project.projectAddress}" name="projectAddress">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="td1">标段名称</td>
+                            <td>
+                                <input type="text"  th:value="${my_project.sectionName}" name="sectionName">
+                            </td>
+
+                            <td class="td1">立项文号</td>
+                            <td>
+                                <input type="text" th:value="${my_project.approvalNumber}" name="approvalNumber">
+                            </td>
+
+                            <td class="td1">技术评审意见</td>
+                            <td >
+                                <input type="text" th:value="${my_project.technicalNumber}" name="technicalNumber">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="td1">项目业主</td>
+                            <td >
+                                <input type="text" th:value="${my_project.projectOwner}" name="projectOwner">
+                            </td>
+
+                            <td class="td1">项目联系人</td>
+                            <td >
+                                <input type="text" th:value="${my_project.username}" name="username">
+                            </td>
+
+                            <td class="td1">项目联系人电话</td>
+                            <td th:text="${my_project.userNumber}">
+                                <input type="number" th:value="${my_project.userNumber}" name="userNumber">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="td1">委托单位</td>
+                            <td >
+                                <input type="text" th:value="${my_project.clientUnit}" name="clientUnit">
+                            </td>
+
+                            <td class="td1">委托联系人</td>
+                            <td >
+                                <input type="text" th:value="${my_project.clientUsername}" name="clientUsername">
+                            </td>
+
+                            <td class="td1">委托联系人电话</td>
+                            <td >
+                                <input type="number" th:value="${my_project.clientNumber}" name="clientNumber">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="td1">编制机构</td>
+                            <td >
+                                <input type="text" th:value="${my_project.compileInstitution}" name="compileInstitution">
+                            </td>
+
+                            <td class="td1">组织机构代码</td>
+                            <td>
+                                <input type="text" th:value="${my_project.institutionNumber}" name="institutionNumber">
+                            </td>
+
+                            <td class="td1">编制人</td>
+                            <td >
+                                <input type="text" th:value="${my_project.compileName}" name="compileName">
+                            </td>
+
+                        </tr>
+                        <tr>
+                            <td class="td1">评审类别</td>
+                            <td>
+                                <input type="text" th:value="${my_project.reviewSort}" name="reviewSort">
+                            </td>
+
+                            <td class="td1">行业类别</td>
+                            <td colspan="3" >
+                                <input type="text" th:value="${my_project.industrySort}" name="industrySort">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="td1">清单规范</td>
+                            <td >
+                                <input type="text" th:value="${my_project.inventoryNorm}" name="inventoryNorm">
+                            </td>
+
+                            <td class="td1">价格依据</td>
+                            <td colspan="3" >
+                                <input type="text" th:value="${my_project.priceGist}" name="priceGist">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="td1">定额体系</td>
+                            <td>
+                                <input type="text" th:value="${my_project.quotaSystem}" name="quotaSystem">
+                            </td>
+                            <td class="td1">立项金额</td>
+                            <td >
+                                <input type="text" th:value="${my_project.approvalPrice}" name="approvalPrice">
+                            </td>
+                            <td class="td1">送审投资额</td>
+                            <td>
+                                <input type="text" th:value="${my_project.investPrice}" name="investPrice">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="td1">立项时间</td>
+                            <td>
+                                <input type="date" th:value="${my_project.approvalTime}" name="approvalTime">
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="td1">项目基本情况</td>
+                            <td colspan="5">
+                                <textarea  th:text="${my_project.projectCondition}" name="projectCondition" rows="3" cols="120"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div style="margin: 0 auto">
+                <input type="file" value="file" name="file" multiple style="width: 49%">
+                <input type="button" value="查看评价" style="width: 49%" th:if="${my_project.state}!=0" onclick="suggestions()">
+                <input class="btn" type="submit" value="提交"></div>
+            <div class="msg" th:text="${msg}">
+            </div>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+    function suggestions(){
+        document.getElementById("user_popLayer").style.display = "block"
+        document.getElementById("user_suggestion").style.display = "block"
+    }
+    function down_suggestion(){
+        document.getElementById("user_popLayer").style.display = "none"
+        document.getElementById("user_suggestion").style.display = "none"
+    }
+</script>
+</body>
+</html>
+

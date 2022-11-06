@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的工作</title>
+    <script th:src="@{../js/vue.js}"></script>
+    <script th:src="@{../js/axios.js}"></script>
+    <script src="node_modules/vue/dist/vue.js"></script>
+    <script src="node_modules/axios/dist/axios.js"></script>
+
+    <style>
+
+        #file{
+            text-align: center;
+            z-index: 9;
+            position: absolute;
+            top:0;
+            right:0;
+            left:0;
+            bottom:0;
+            margin:auto;
+            border: black solid 2px;
+            background: white;
+            width: 600px;
+            height: 400px;
+            display: none;
+        }
+        .file{
+            margin: 10px auto;
+            width: 500px;
+            background: white;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            height: 100%;
+        }
+        body {
+            height: 100%;
+        }
+        .container {
+            height: 100%;
+            background-image: linear-gradient(to right, #fbc2eb, #a6c1ee);
+        }
+        .login-wrapper {
+            background-color: #fff;
+            width: 900px;
+            height: 520px;
+            border-radius: 15px;
+            padding: 0 50px;
+            position: relative;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .header {
+            float: left;
+            font-size: 18px;
+            text-align: left;
+            line-height: 25px;
+            width: 100px;
+        }
+        table{
+            width: 886px;
+            height: 60px;
+            font-size: 10px;
+        }
+        .td1{
+            text-align: left;
+            width: 33%;
+        }
+        .td2{
+            text-align: center;
+            width: 115px;
+        }
+        .top-ui{
+            width: 49%;
+            float: left;
+        }
+        #description{
+            display: none;
+            z-index: 9;
+            background: white;
+             border: black solid 1px;
+             width: 900px;
+             height: 518px;
+            position:absolute;  /*position:fixed;*/
+            top:0;
+            right:0;
+            left:0;
+            bottom:0;
+            margin:auto;
+        }
+        #description_file{
+            margin: 5px auto;
+            width:880px;
+            height: 480px;
+        }
+        #popLayer {
+            display: none;
+            background-color: #B3B3B3;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 8;
+            -moz-opacity: 0.8;
+            opacity:.80;
+            filter: alpha(opacity=90);/* 只支持IE6、7、8、9 */
+        }
+        #suggestion{
+            display: none;
+            z-index: 11;
+            background: white;
+            border: black solid 1px;
+            width: 400px;
+            height: 300px;
+            position:absolute;  /*position:fixed;*/
+            top:0;
+            right:0;
+            left:0;
+            bottom:0;
+            margin:auto;
+
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="container" id="container">
+    <div id="popLayer"></div>
+    <div style="width: 100%;height: 20px;text-align: center">我的工作</div>
+    <div class="login-wrapper">
+        <div class="header" id="doing" style="border-bottom: blue solid 1px;text-align: center">
+            <span @click="get_all()">进行中</span>
+        </div>&nbsp;&nbsp;
+        <div class="header" id="done" style="border-bottom: white solid 1px;text-align: center">
+            <span @click="get_success() ">已结审</span>
+        </div>
+            <div class="form-wrapper">
+                <div style="width: 100%;margin: 0 auto">
+                    <div class="top-ui" style="text-align: left;">
+                        <input type="text" placeholder="请输入项目名称或者立项编号进行查询" style="width: 68%" v-model="project_search.projectName">
+                        <input type="button" value="搜索" @click="search_projects()">
+                    </div>
+
+                    <div class="top-ui" style="text-align: right;">
+                        <span style="color: dodgerblue;">项目评审情况台账</span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="color: dodgerblue;">项目评审情况统计</span>
+                    </div>
+                </div>
+                <div class="form-wrapper" id="all_projects" style="text-align: center; ">
+                    <div v-for="project in pageProject.new" v-if="projects" style="margin: 5px auto">
+                        <table border="1px solid black" cellspacing="0">
+                            <tr>
+                                <td class="td1">
+                                    项目名称:<span v-text="project.projectName" ></span><br>
+                                    项目业主:<span v-text="project.projectOwner" ></span><br>
+                                    委托单位:<span v-text="project.clientUnit" ></span><br>
+                                    提交时间:<span v-text="project.submitTime" ></span><br>
+                                    接件时间:<span v-text="project.submitTime" ></span>
+                                </td>
+                                <td class="td1">
+                                    送审投资额:<span v-text="project.investPrice" ></span><br>
+                                    接件人:<span v-text="project.username" ></span><br>
+                                    项目联系人:<span v-text="project.username" ></span><br>
+                                    承办人:<span v-text="project.clientUsername" ></span><br>
+                                </td>
+
+                                <td class="td1">
+                                    编制机构:<span v-text="project.compileInstitution" ></span><br>
+                                    立项金额:<span v-text="project.approvalPrice" ></span><br>
+                                    <a v-on:click="get_date(project)" style="color: dodgerblue;">查看附件</a>
+                                <span  v-on:click="get_description(project)" style="color: dodgerblue;">查看详细</span>
+                            </tr>
+                        </table>
+                    </div>
+                    <span v-if="projects.length !== 0">
+                                <a href="#" @click="getpage(pageProject.current-1,projects)"  v-if="pageProject.current>=2&&pageProject.totalpage>1"><<</a>&nbsp;&nbsp;
+                                <span v-for="i in addpage(pageProject.totalpage)"><a href="#" @click="getpage(i,projects)">{{i}}&nbsp;</a></span>
+                                &nbsp;<a href="#" @click="getpage(pageProject.current+1,projects)" v-if="pageProject.current<pageProject.totalpage">>></a>
+                    </span>
+                </div>
+                <div class="form-wrapper" id="success_projects" style="text-align: center;display: none">
+                    <div v-for="project in pageProject.new" v-if="projects" style="margin: 5px auto">
+                        <table border="1px solid black" cellspacing="0">
+                            <tr>
+                                <td class="td1">
+                                    项目名称:<span v-text="project.projectName" ></span><br>
+                                    项目业主:<span v-text="project.projectOwner" ></span><br>
+                                    委托单位:<span v-text="project.clientUnit" ></span><br>
+                                    提交时间:<span v-text="project.submitTime" ></span><br>
+                                    接件时间:<span v-text="project.submitTime" ></span>
+                                </td>
+                                <td class="td1">
+                                    送审投资额:<span v-text="project.investPrice" ></span><br>
+                                    接件人:<span v-text="project.username" ></span><br>
+                                    项目联系人:<span v-text="project.username" ></span><br>
+                                    承办人:<span v-text="project.clientUsername" ></span><br>
+                                </td>
+
+                                <td class="td1">
+                                    编制机构:<span v-text="project.compileInstitution" ></span><br>
+                                    立项金额:<span v-text="project.approvalPrice" ></span><br>
+                                    <a v-on:click="get_date(project)" style="color: dodgerblue;">查看附件</a>
+                                    <span  v-on:click="get_description(project)" style="color: dodgerblue;">查看详细</span>
+                            </tr>
+                        </table>
+                    </div>
+                    <span v-if="projects.length !== 0">
+                                <a href="#" @click="getpage(pageProject.current-1,projects)"  v-if="pageProject.current>=2&&pageProject.totalpage>1"><<</a>&nbsp;&nbsp;
+                                <span v-for="i in addpage(pageProject.totalpage)"><a href="#" @click="getpage(i,projects)">{{i}}&nbsp;</a></span>
+                                &nbsp;<a href="#" @click="getpage(pageProject.current+1,projects)" v-if="pageProject.current<pageProject.totalpage">>></a>
+                    </span>
+                </div>
+            </div>
+    </div>
+    <div id="file">
+        <table class="file" border="1px solid black" cellspacing="0">
+            <tr v-for="(p,index) in fileDate">
+                <td style="text-align: left">{{index}}.{{p}}</td>
+                <td>
+                    <a @click="get(p)" style="color: royalblue">点击下载</a>
+                </td>
+            </tr>
+        </table>
+        <span @click="re('file')" style="background: gainsboro">返回</span>
+    </div>
+    <div id="description">
+        <table border="1px solid black" cellspacing="0" id="description_file">
+            <tr>
+                <td class="td2">项目名称</td>
+                <td>
+                    {{one_project.projectName}}
+                </td>
+
+                <td class="td2">项目地址</td>
+                <td colspan="3">
+                    {{one_project.projectAddress}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">标段名称</td>
+                <td>
+                    {{one_project.sectionName}}
+                </td>
+
+                <td class="td2">立项文号</td>
+                <td>
+                    {{one_project.approvalNumber}}
+                </td>
+
+                <td class="td2">技术评审意见</td>
+                <td >
+                    {{one_project.technicalNumber}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">项目业主</td>
+                <td >
+                    {{one_project.projectOwner}}
+                </td>
+
+                <td class="td2">项目联系人</td>
+                <td >
+                    {{one_project.username}}
+                </td>
+
+                <td class="td2">项目联系人电话</td>
+                <td>
+                    {{one_project.userNumber}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">委托单位</td>
+                <td >
+                    {{one_project.clientUnit}}
+                </td>
+
+                <td class="td2">委托联系人</td>
+                <td >
+                    {{one_project.clientUsername}}
+                </td>
+
+                <td class="td2">委托联系人电话</td>
+                <td >
+                    {{one_project.clientNumber}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">编制机构</td>
+                <td >
+                    {{one_project.compileInstitution}}
+                </td>
+
+                <td class="td2">组织机构代码</td>
+                <td>
+                    {{one_project.institutionNumber}}
+                </td>
+
+                <td class="td2">编制人</td>
+                <td >
+                    {{one_project.compileName}}
+                </td>
+
+            </tr>
+            <tr>
+                <td class="td2">评审类别</td>
+                <td>
+                    {{one_project.reviewSort}}
+                </td>
+
+                <td class="td2">行业类别</td>
+                <td colspan="3" >
+                    {{one_project.industrySort}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">清单规范</td>
+                <td >
+                    {{one_project.inventoryNorm}}
+                </td>
+
+                <td class="td2">价格依据</td>
+                <td colspan="3" >
+                    {{one_project.priceGist}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">定额体系</td>
+                <td>
+                    {{one_project.quotaSystem}}
+                </td>
+                <td class="td2">立项金额</td>
+                <td >
+                    {{one_project.approvalPrice}}
+                </td>
+                <td class="td2">送审投资额</td>
+                <td>
+                    {{one_project.investPrice}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">立项时间</td>
+                <td>
+                    {{one_project.approvalTime}}
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="td2">项目基本情况</td>
+                <td colspan="5">
+                    {{one_project.projectCondition}}
+                </td>
+            </tr>
+        </table>
+        <div style="margin: 0 auto;text-align: center">
+            <span @click="re('description')" style="background: gainsboro;border: black solid 1px">返回</span>
+            <span   @click="get_suggestion('suggestion')" style="background: gainsboro;margin-left: 10px;border: black solid 1px" v-if="one_project.state!==1">评价</span>
+            <span  style="background: gainsboro;margin-left: 10px;border: black solid 1px" v-else>审核已通过</span>
+
+
+        </div>
+    </div>
+    <div id="suggestion">
+        <form action="/admins/do_project" method="post" style="text-align: center;margin:30px auto">
+            <input type="text" name="id" v-bind:value="one_project.id" id="project_id" hidden>
+            <input type="radio" name="state" value="-1" v-model="do_project.state">将其退回
+            <input type="radio" name="state" value="1" v-model="do_project.state">通过审批 <br>
+            <textarea name="suggestion" v-model="do_project.suggestion" cols="30" rows="10" placeholder="请填写评价！"></textarea>
+
+            <br>
+            <input type="button" value="提交" @click="do_projected()">
+            <input type="button" value="返回" @click="close_suggestion('suggestion')">
+        </form>
+    </div>
+</div>
+<script th:inline="javascript">
+    new Vue({
+        el:"#container",
+        data:{
+            date:"",
+            fileDate:[],
+            all_project:'null',
+            success_project:"",
+            one_project:'null',
+            projects:[],
+            project_search:{
+                projectName:""
+            },
+            search_projectd:[null],
+            do_project:{
+                id:0,
+                state:0,
+                suggestion:""
+            },
+            pageProject: {
+                totalpage: 0,
+                pagenumber: 2,
+                array: [],
+                current: 1,
+                new: []
+            },
+            pageFile: {
+                totalpage: 0,
+                pagenumber: 2,
+                array: [],
+                current: 1,
+                new: []
+            }
+        },
+        mounted:function (){
+            // axios.defaults.baseURL="http://localhost:8080"
+            axios.defaults.baseURL="http://124.221.16.245:8080"
+            this.all_project = [[${all_project}]]
+            this.projects = this.all_project
+            this.pageProject.pagenumber = 4
+            this.pageProject.current = 1
+            this.pageProject.totalpage = this.projects.length/this.pageProject.pagenumber
+            this.pageProject.new = this.projects.slice(0,this.pageProject.pagenumber)
+        },
+        methods:{
+            get_date(project){
+                var dated = project.date
+
+                if (dated!=null){
+                    this.fileDate = dated.split('\*');
+                    this.show_id("file");
+                }else{
+                    alert("附件为空！")
+                }
+
+            },
+            get(xx){
+                // window.location.href = "http://localhost:8080/admins/get_date?documentName="+xx
+                window.location.href = "http://124.221.16.245:8080/admins/get_date?documentName="+xx
+            },
+            re(xx){
+                document.getElementById(xx).style.display = "none"
+                document.getElementById("popLayer").style.display = "none"
+            },
+            show_id(xx){
+                document.getElementById(xx).style.display = "block"
+                document.getElementById("popLayer").style.display = "block"
+            },
+            get_suggestion(xx){
+                this.show_id(xx);
+                document.getElementById("popLayer").style.display = "block"
+                document.getElementById("popLayer").style.zIndex = "10";
+            },
+            close_suggestion(xx){
+                this.re(xx);
+                document.getElementById("popLayer").style.display = "block"
+                document.getElementById("popLayer").style.zIndex = "8";
+            },
+            get_description(project){
+                this.one_project = project;
+                this.show_id("description")
+            },
+            do_projected(){
+                this.do_project.id=this.one_project.id
+                if (this.do_project.state===0){
+                    alert("请选择将其退回还是审批通过！")
+                }
+                else{
+                    axios.post("admins/do_project",this.do_project).then(res=>{
+                        alert(res.data.msg)
+                        window.location.href = "http://124.221.16.245:8080/admins/all"
+                        // window.location.href = "http://localhost:8080/admins/all"
+                    })
+                }
+
+            },
+            get_all(){
+                this.projects = this.all_project
+                this.pageProject.pagenumber = 4
+                this.pageProject.current = 1
+                this.pageProject.totalpage = this.projects.length/this.pageProject.pagenumber
+                this.pageProject.new = this.projects.slice(0,this.pageProject.pagenumber)
+
+                document.getElementById("doing").style.borderColor = "blue"
+                document.getElementById("done").style.borderColor = "white"
+                document.getElementById("all_projects").style.display = "block"
+                document.getElementById("success_projects").style.display = "none"
+            },
+            get_success(){
+                var that = this
+                axios.get("admins/success").then(res=>{
+                    that.success_project = res.data.success_project
+                    that.projects = that.success_project
+                    that.pageProject.pagenumber = 4
+                    that.pageProject.current = 1
+                    that.pageProject.totalpage = that.projects.length/that.pageProject.pagenumber
+                    that.pageProject.new = that.projects.slice(0,that.pageProject.pagenumber)
+
+                    console.log(res)
+                })
+
+                document.getElementById("doing").style.borderColor = "white"
+                document.getElementById("done").style.borderColor = "blue"
+                document.getElementById("all_projects").style.display = "none"
+                document.getElementById("success_projects").style.display = "block"
+            },
+            search_projects(){
+                const that = this;
+                if (that.project_search.projectName ===""){
+                    alert("搜索内容为空!")
+                }
+                else{
+                    axios.post("admins/search_project",this.project_search).then(res=>{
+                        that.search_projectd = res.data.search_project
+
+                        that.projects = that.search_projectd
+                        that.pageProject.pagenumber = 4
+                        that.pageProject.current = 1
+                        that.pageProject.totalpage = that.projects.length/that.pageProject.pagenumber
+                        that.pageProject.new = that.projects.slice(0,that.pageProject.pagenumber)
+                    })
+                }
+
+            },
+            // 分页
+            addpage(all){
+                this.pageProject.array.length = 0
+                for (var i = 0; i < all; i++) {
+                    this.pageProject.array[i] = i+1
+                }
+                return this.pageProject.array
+            },
+            getpage(current_page,list){
+                this.pageProject.current = current_page
+                this.pageProject.new = list.slice((this.pageProject.current-1)*this.pageProject.pagenumber,this.pageProject.current*this.pageProject.pagenumber)
+            }
+        }
+    })
+</script>
+</body>
+
+</html>
+
