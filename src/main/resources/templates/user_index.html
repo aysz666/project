@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的项目</title>
+    <script th:src="@{../js/vue.js}"></script>
+    <script th:src="@{../js/axios.js}"></script>
+    <script src="node_modules/vue/dist/vue.js"></script>
+    <script src="node_modules/axios/dist/axios.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,6 +18,20 @@
         }
         body {
             height: 100%;
+        }
+        #all_projects{
+            background-color: #fff;
+            display: none;
+            width: 900px;
+            height: 520px;
+            border-radius: 15px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            margin: auto;
+            z-index: 9;
         }
         .user_container {
             height: 100%;
@@ -61,9 +79,27 @@
             width: 115px;
         }
         input{
-            width: 98%;
+            width: 96%;
+        }#description{
+             display: none;
+             z-index: 11;
+             background: white;
+             border: black solid 1px;
+             width: 900px;
+             height: 518px;
+             position:absolute;  /*position:fixed;*/
+             top:0;
+             right:0;
+             left:0;
+             bottom:0;
+             margin:auto;
+         }
+        #description_file{
+            margin: 5px auto;
+            width:880px;
+            height: 480px;
         }
-        #user_popLayer {
+        #popLayer {
             display: none;
             background-color: #B3B3B3;
             position: absolute;
@@ -91,11 +127,19 @@
             left: 0;
             z-index: 9;
         }
+        .td3{
+            text-align: left;
+            width: 33%;
+        }
+        .td2{
+            text-align: center;
+            width: 115px;
+        }
     </style>
 </head>
 <body>
-<div class="user_container">
-    <div id="user_popLayer"></div>
+<div class="user_container" id="user_container">
+    <div id="popLayer"></div>
     <div id="user_suggestion">
         <div style="height: 90%">
             <span th:text="${my_project.suggestion}">暂时没有评价！</span>
@@ -104,11 +148,181 @@
             <input type="button" value="关闭" onclick="down_suggestion()" >
         </div>
     </div>
+    <div id="description">
+        <table border="1px solid black" cellspacing="0" id="description_file">
+            <tr>
+                <td class="td2">项目名称</td>
+                <td>
+                    {{one_project.projectName}}
+                </td>
+
+                <td class="td2">项目地址</td>
+                <td colspan="3">
+                    {{one_project.projectAddress}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">标段名称</td>
+                <td>
+                    {{one_project.sectionName}}
+                </td>
+
+                <td class="td2">立项文号</td>
+                <td>
+                    {{one_project.approvalNumber}}
+                </td>
+
+                <td class="td2">技术评审意见</td>
+                <td >
+                    {{one_project.technicalNumber}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">项目业主</td>
+                <td >
+                    {{one_project.projectOwner}}
+                </td>
+
+                <td class="td2">项目联系人</td>
+                <td >
+                    {{one_project.username}}
+                </td>
+
+                <td class="td2">项目联系人电话</td>
+                <td>
+                    {{one_project.userNumber}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">委托单位</td>
+                <td >
+                    {{one_project.clientUnit}}
+                </td>
+
+                <td class="td2">委托联系人</td>
+                <td >
+                    {{one_project.clientUsername}}
+                </td>
+
+                <td class="td2">委托联系人电话</td>
+                <td >
+                    {{one_project.clientNumber}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">编制机构</td>
+                <td >
+                    {{one_project.compileInstitution}}
+                </td>
+
+                <td class="td2">组织机构代码</td>
+                <td>
+                    {{one_project.institutionNumber}}
+                </td>
+
+                <td class="td2">编制人</td>
+                <td >
+                    {{one_project.compileName}}
+                </td>
+
+            </tr>
+            <tr>
+                <td class="td2">评审类别</td>
+                <td>
+                    {{one_project.reviewSort}}
+                </td>
+
+                <td class="td2">行业类别</td>
+                <td colspan="3" >
+                    {{one_project.industrySort}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">清单规范</td>
+                <td >
+                    {{one_project.inventoryNorm}}
+                </td>
+
+                <td class="td2">价格依据</td>
+                <td colspan="3" >
+                    {{one_project.priceGist}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">定额体系</td>
+                <td>
+                    {{one_project.quotaSystem}}
+                </td>
+                <td class="td2">立项金额</td>
+                <td >
+                    {{one_project.approvalPrice}}
+                </td>
+                <td class="td2">送审投资额</td>
+                <td>
+                    {{one_project.investPrice}}
+                </td>
+            </tr>
+            <tr>
+                <td class="td2">立项时间</td>
+                <td>
+                    {{one_project.approvalTime}}
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="td2">项目基本情况</td>
+                <td colspan="5">
+                    {{one_project.projectCondition}}
+                </td>
+            </tr>
+        </table>
+        <div style="margin: 0 auto;text-align: center">
+            <span @click="close_suggestion('description')" style="background: gainsboro;border: black solid 1px">返回</span>
+        </div>
+    </div>
+    <div class="form-wrapper" id="all_projects" style="text-align: center; padding-top: 20px">
+        <div v-for="project in pageProject.new" v-if="projects" style="margin: 10px auto">
+            <table border="1px solid black" cellspacing="0" style="width: 886px;height: 60px;font-size: 10px;margin: 0 auto">
+                <tr>
+                    <td class="td3">
+                        项目名称:<span v-text="project.projectName" ></span><br>
+                        项目业主:<span v-text="project.projectOwner" ></span><br>
+                        委托单位:<span v-text="project.clientUnit" ></span><br>
+                        提交时间:<span v-text="project.submitTime" ></span><br>
+                        接件时间:<span v-text="project.submitTime" ></span>
+                    </td>
+                    <td class="td1">
+                        送审投资额:<span v-text="project.investPrice" ></span><br>
+                        接件人:<span v-text="project.username" ></span><br>
+                        项目联系人:<span v-text="project.username" ></span><br>
+                        承办人:<span v-text="project.clientUsername" ></span><br>
+                    </td>
+
+                    <td class="td1">
+                        编制机构:<span v-text="project.compileInstitution" ></span><br>
+                        立项金额:<span v-text="project.approvalPrice" ></span><br>
+                        <span  v-on:click="get_description(project)" style="color: dodgerblue;">查看详细</span>
+                </tr>
+            </table>
+        </div>
+        <span v-if="projects.length !== 0">
+                                <a href="#" @click="getpage(pageProject.current-1,projects)"  v-if="pageProject.current>=2&&pageProject.totalpage>1"><<</a>&nbsp;&nbsp;
+                                <span v-for="i in addpage(pageProject.totalpage)"><a href="#" @click="getpage(i,projects)">{{i}}&nbsp;</a></span>
+                                &nbsp;<a href="#" @click="getpage(pageProject.current+1,projects)" v-if="pageProject.current<pageProject.totalpage">>></a>
+        </span>
+        <div style="margin: 0 auto;text-align: center">
+            <span @click="re('all_projects')" style="background: gainsboro;border: black solid 1px">返回</span>
+        </div>
+    </div>
     <div class="login-wrapper">
         <div class="header">我的项目
             <span th:if="${my_project.state}==1" style="color: chartreuse">审批通过</span>
             <span th:if="${my_project.state}==-1" style="color: red">审批被退回！</span>
             <span th:if="${my_project.state}==0" style="color: darkolivegreen">审批进行中……</span>
+            <span th:if="${my_project.state}==-2" style="color: black">待提交</span>
         </div>
         <form action="/users/submit" method="post" enctype="multipart/form-data">
             <div class="form-wrapper">
@@ -118,6 +332,8 @@
                             <td class="td1">项目名称</td>
                             <td>
                                 <input type="text" th:value="${my_project.projectName}" name="projectName">
+                                <input type="number" th:value="${my_project.state}" name="state" hidden>
+                                <input type="number" th:value="${my_project.id}" name="id" hidden>
                             </td>
 
                             <td class="td1">项目地址</td>
@@ -153,7 +369,7 @@
                             </td>
 
                             <td class="td1">项目联系人电话</td>
-                            <td th:text="${my_project.userNumber}">
+                            <td>
                                 <input type="number" th:value="${my_project.userNumber}" name="userNumber">
                             </td>
                         </tr>
@@ -246,9 +462,14 @@
                 </div>
             </div>
             <div style="margin: 0 auto">
-                <input type="file" value="file" name="file" multiple style="width: 49%">
-                <input type="button" value="查看评价" style="width: 49%" th:if="${my_project.state}!=0" onclick="suggestions()">
-                <input class="btn" type="submit" value="提交"></div>
+                <input type="file" value="file" name="file" multiple style="width: 32%">
+                <input type="button" value="查看评价" style="width: 32%" th:if="${my_project.state}!=0 and ${my_project.state}!=-2" onclick="suggestions()">
+                <input type="button" value="查看历史记录" style="width: 32%" v-on:click="get_all()">
+                <input class="btn" type="button" value="审核中" th:if="${my_project.state}==0">
+                <input class="btn" type="submit" value="再次提交" th:if="${my_project.state}==-1">
+                <input class="btn" type="submit" value="提交" th:if="${my_project.state}==-2">
+                <input class="btn" type="submit" value="提交" th:if="${my_project.state}==1">
+            </div>
             <div class="msg" th:text="${msg}">
             </div>
         </form>
@@ -256,14 +477,91 @@
 </div>
 <script type="text/javascript">
     function suggestions(){
-        document.getElementById("user_popLayer").style.display = "block"
+        document.getElementById("popLayer").style.display = "block"
         document.getElementById("user_suggestion").style.display = "block"
     }
     function down_suggestion(){
-        document.getElementById("user_popLayer").style.display = "none"
+        document.getElementById("popLayer").style.display = "none"
         document.getElementById("user_suggestion").style.display = "none"
     }
 </script>
+<script th:inline="javascript">
+    new Vue({
+        el: "#user_container",
+        data: {
+            date: "",
+            fileDate: [],
+            one_project:'',
+            projects:[],
+            pageProject: {
+                totalpage: 0,
+                pagenumber: 2,
+                array: [],
+                current: 1,
+                new: []
+            },
+            pageFile: {
+                totalpage: 0,
+                pagenumber: 2,
+                array: [],
+                current: 1,
+                new: []
+            }
+        },
+        mounted:function (){
+            // axios.defaults.baseURL="http://localhost:8080"
+            axios.defaults.baseURL="http://124.221.16.245:8080"
+        },
+        methods:{
+            re(xx){
+                document.getElementById(xx).style.display = "none"
+                document.getElementById("popLayer").style.display = "none"
+            },
+            show_id(xx){
+                document.getElementById(xx).style.display = "block"
+                document.getElementById("popLayer").style.display = "block"
+            },
+            get_suggestion(xx){
+                this.show_id(xx);
+                document.getElementById("popLayer").style.display = "block"
+                document.getElementById("popLayer").style.zIndex = "10";
+            },
+            close_suggestion(xx){
+                this.re(xx);
+                document.getElementById("popLayer").style.display = "block"
+                document.getElementById("popLayer").style.zIndex = "8";
+            },
+            get_description(project){
+                this.one_project = project;
+                this.show_id("description")
+            },
+            get_all(){
+                this.show_id("all_projects")
+                axios.get("/users/my_all_project").then(res=>{
+                    this.projects = res.data.my_all_project
+                    this.pageProject.pagenumber = 4
+                    this.pageProject.current = 1
+                    this.pageProject.totalpage = this.projects.length/this.pageProject.pagenumber
+                    this.pageProject.new = this.projects.slice(0,this.pageProject.pagenumber)
+                })
+
+            },
+            // 分页
+            addpage(all){
+                this.pageProject.array.length = 0
+                for (var i = 0; i < all; i++) {
+                    this.pageProject.array[i] = i+1
+                }
+                return this.pageProject.array
+            },
+            getpage(current_page,list){
+                this.pageProject.current = current_page
+                this.pageProject.new = list.slice((this.pageProject.current-1)*this.pageProject.pagenumber,this.pageProject.current*this.pageProject.pagenumber)
+            }
+        }
+    })
+</script>
+
 </body>
 </html>
 

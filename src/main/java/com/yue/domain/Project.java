@@ -100,4 +100,8 @@ public class Project implements Serializable {
         this.compileName = compileName;
         this.investPrice = investPrice;
     }
+
+    public Project(int i) {
+        this.state  = i;
+    }
 }
